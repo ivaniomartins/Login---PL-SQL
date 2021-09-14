@@ -1,0 +1,18 @@
+CREATE TABLE login (
+  login_id   NUMBER NOT NULL,
+  usuario_id NUMBER NULL,
+  dt_login   DATE   NULL
+)
+/
+ALTER TABLE login
+  ADD CONSTRAINT login_pk PRIMARY KEY (
+    login_id
+  )
+/
+ALTER TABLE login
+  ADD CONSTRAINT fk_usuario_login FOREIGN KEY (
+    usuario_id
+  ) REFERENCES usuario (
+    usuario_id
+  )
+/
