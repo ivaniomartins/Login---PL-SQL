@@ -1,0 +1,19 @@
+CREATE TABLE modulo (
+  modulo_id NUMBER       NOT NULL,
+  nm_modulo VARCHAR2(50) NULL
+)
+  STORAGE (
+    NEXT       1024 K
+  )
+/
+ALTER TABLE modulo
+  ADD CONSTRAINT pk_modulo PRIMARY KEY (
+    modulo_id
+  )
+  USING INDEX
+    STORAGE (
+      NEXT       1024 K
+    )
+/
+
+
