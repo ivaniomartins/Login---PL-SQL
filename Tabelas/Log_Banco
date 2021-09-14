@@ -1,0 +1,22 @@
+CREATE TABLE log_banco (
+  log_id     NUMBER NOT NULL,
+  usuario_id NUMBER NULL,
+  dt_login   DATE   DEFAULT SYSDATE NULL
+)
+ 
+/
+ALTER TABLE log_banco
+  ADD CONSTRAINT pk_log PRIMARY KEY (
+    log_id
+  )
+ 
+/
+ALTER TABLE log_banco
+  ADD CONSTRAINT fk_usuario FOREIGN KEY (
+    usuario_id
+  ) REFERENCES usuario (
+    usuario_id
+  )
+/
+
+
