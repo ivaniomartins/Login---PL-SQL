@@ -1,0 +1,33 @@
+CREATE TABLE usuario (
+  usuario_id      NUMBER       NOT NULL,
+  nm_usuario      VARCHAR2(75) NULL,
+  sn_ativo        CHAR(1)      NULL,
+  perfil_id       NUMBER       NULL,
+  departamento_id NUMBER       NULL,
+  email           VARCHAR2(70) NULL
+)
+/
+
+ALTER TABLE usuario
+  ADD CONSTRAINT pk_usuario PRIMARY KEY (
+    usuario_id
+  )
+/
+
+ALTER TABLE usuario
+  ADD CONSTRAINT fk_depart_usu FOREIGN KEY (
+    departamento_id
+  ) REFERENCES departamento (
+    departamento_id
+  )
+/
+
+ALTER TABLE usuario
+  ADD CONSTRAINT fk_perfil_usu FOREIGN KEY (
+    perfil_id
+  ) REFERENCES perfil (
+    perfil_id
+  )
+/
+
+
