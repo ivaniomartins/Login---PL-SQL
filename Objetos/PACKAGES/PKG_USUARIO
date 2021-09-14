@@ -1,0 +1,288 @@
+CREATE OR REPLACE PACKAGE pkg_usuario IS
+
+ PROCEDURE  INSERE_USUARIO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE,
+                                 pPerfil perfil.nm_perfil%TYPE,
+                                 pDepartamento departamento.nm_departamento%Type);
+
+ PROCEDURE ALTERA_USUARIO_DEPARTAMENTO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE,
+                                 pDepartamento departamento.nm_departamento%Type);
+
+ PROCEDURE PRC_ATIVA_DESAT_USUARIO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE,
+                                 pSnAtivo usuario.sn_ativo%TYPE);
+
+ PROCEDURE PRC_EXCLUI_USUARIO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE
+                                );
+ PROCEDURE PRC_INSERE_LOGIN(pEmail usuario.email%TYPE);
+
+END;
+/
+
+CREATE OR REPLACE PACKAGE BODY pkg_usuario IS
+
+PROCEDURE INSERE_USUARIO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE,
+                                 pPerfil perfil.nm_perfil%TYPE,
+                                 pDepartamento departamento.nm_departamento%Type) IS
+
+CURSOR cUsuario IS
+SELECT Count(*)
+FROM usuario
+WHERE email = pEmail
+AND  nm_usuario = pNome;
+
+CURSOR cPerfil IS
+
+SELECT perfil_id
+FROM perfil
+WHERE nm_perfil  = pPerfil;
+
+
+CURSOR cDepartamento IS
+
+SELECT departamento_id
+FROM departamento
+WHERE nm_departamento = pDepartamento;
+
+
+vCount NUMBER :=0;
+vPerf perfil.perfil_id%TYPE;
+vDepart departamento.departamento_id%TYPE;
+
+BEGIN
+ OPEN cUsuario;
+ FETCH cUsuario INTO vCount;
+ CLOSE cUsuario;
+
+ OPEN cPerfil;
+ FETCH cPerfil INTO vPerf;
+ CLOSE cPerfil;
+
+  OPEN cDepartamento;
+ FETCH cDepartamento INTO vDepart;
+ CLOSE cDepartamento;
+
+
+
+ IF (vCount > 0) THEN
+
+ Raise_Application_Error(-20999,'J? existe um usuario com este email e nome');
+ IF (cPerfil%NOTFOUND) THEN
+
+Raise_Application_Error(-30000,'O perfil informado n?o existe');
+END IF;
+
+ IF (cDepartamento%NOTFOUND) THEN
+ Raise_Application_Error(-30001,'O departamento informado n?o existe');
+  END IF;
+
+ ELSE
+   INSERT INTO usuario
+   VALUES (seq_usuario.NEXTVAL,
+           pNome,
+           'S',
+           vPerf,
+           vDepart,
+           pEmail);
+
+  COMMIT;
+
+ END IF;
+
+    EXCEPTION
+      WHEN Others THEN
+      Raise_Application_Error(-20998,'Erro ao concluir o cadastro '||' - '||SQLERRM||' - '||'Por favor revise as informa??es passadas');
+END;
+
+------------------- CRIACAO DE PROCEDURE ALTERAR DEPARTAMENTO VINCULADOA O USUARIO ---------
+PROCEDURE ALTERA_USUARIO_DEPARTAMENTO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE,
+                                 pDepartamento departamento.nm_departamento%Type) IS
+
+CURSOR cUsuario IS
+SELECT departamento_id , usuario_id
+
+FROM usuario
+WHERE email = pEmail
+AND  nm_usuario = pNome;
+
+
+CURSOR cDepartamento IS
+
+SELECT departamento_id
+FROM departamento
+WHERE nm_departamento = pDepartamento;
+
+
+vUsuDepart usuario.departamento_id%TYPE;
+vCdUsu  usuario.usuario_id%TYPE;
+vDepart departamento.departamento_id%TYPE;
+
+BEGIN
+ OPEN cUsuario;
+ FETCH cUsuario INTO vUsuDepart, vCdUsu;
+ CLOSE cUsuario;
+
+  OPEN cDepartamento;
+ FETCH cDepartamento INTO vDepart;
+ CLOSE cDepartamento;
+
+
+
+ IF (vUsuDepart = vDepart) THEN
+
+ Raise_Application_Error(-20991,'Us?ario j? vinculado ao departamento');
+
+
+
+ ELSE
+   UPDATE usuario
+   SET departamento_id =  pDepartamento
+   WHERE usuario_id = vCdUsu ;
+
+  COMMIT;
+
+ END IF;
+
+    EXCEPTION
+      WHEN Others THEN
+      Raise_Application_Error(-20998,'Erro ao concluir o cadastro '||' - '||SQLERRM||' - '||'Por favor revise as informa??es passadas');
+
+
+END;
+
+------------------- CRIACAO DE PROCEDURE PARA ALTERACAO DO USUARIO -------------
+PROCEDURE PRC_ATIVA_DESAT_USUARIO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE,
+                                 pSnAtivo usuario.sn_ativo%TYPE) IS
+
+CURSOR cUsuario IS
+
+SELECT usuario_id
+FROM usuario
+WHERE email = pEmail
+AND nm_usuario = pNome;
+
+vUsuario NUMBER :=0;
+
+BEGIN
+
+OPEN cUsuario;
+FETCH cUsuario INTO vUsuario;
+CLOSE cUsuario;
+
+UPDATE usuario
+SET sn_ativo = pSnAtivo
+WHERE usuario_id = vUsuario;
+
+COMMIT;
+
+END;
+
+------------------- CRIACAO DE PROCEDURE PARA ALTERACAO DO USUARIO  - FIM -------------
+
+------------------- CRIACAO DE PROCEDURE PARA EXCLUSAO DO USUARIO -------------
+PROCEDURE PRC_EXCLUI_USUARIO (pEmail usuario.email%TYPE,
+                                 pNome usuario.nm_usuario%TYPE
+                                ) IS
+
+CURSOR cUsuario IS
+
+SELECT usuario_id
+FROM usuario
+WHERE email = pEmail
+AND nm_usuario = pNome;
+
+vUsuario NUMBER :=0;
+
+BEGIN
+
+OPEN cUsuario;
+FETCH cUsuario INTO vUsuario;
+CLOSE cUsuario;
+IF (cUsuario%NOTFOUND) THEN
+Raise_Application_Error(-20995,'Usu?rio n?o encontrado');
+ELSE
+DELETE FROM log_banco
+WHERE usuario_id = vUsuario;
+
+COMMIT;
+
+DELETE FROM login
+WHERE usuario_id = vUsuario;
+
+COMMIT;
+
+DELETE FROM usuario
+WHERE usuario_id = vUsuario;
+
+COMMIT;
+ END IF;
+END;
+
+PROCEDURE PRC_INSERE_LOGIN(pEmail usuario.email%TYPE)
+ IS
+
+  CURSOR cEmail IS
+
+  SELECT usuario_id
+  FROM usuario
+  WHERE email = pEmail;
+
+ vAcesso NUMBER:= 0 ;
+
+ BEGIN
+   Dbms_Output.Put_Line('Passo1');
+ OPEN cEmail;
+ FETCH cEmail INTO vAcesso;
+ CLOSE cEmail;
+
+
+ Dbms_Output.Put_Line('Passo 1.1  '|| vAcesso);
+
+
+ IF (vAcesso > 0) THEN
+
+
+ INSERT INTO login
+ VALUES(seq_login.NEXTVAL,
+         vAcesso,
+         SYSDATE);
+
+
+
+
+Raise_Application_Error(-20000,'Acesso realizado com sucesso');
+
+
+ Dbms_Output.Put_Line('Passo2');
+
+ELSE
+
+
+
+  Raise_Application_Error(-20199,'E-mail invalido, informe um novo email');
+
+END IF;
+ COMMIT;
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+END;
+/
+
+Z
