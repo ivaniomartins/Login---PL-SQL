@@ -1,0 +1,14 @@
+CREATE TABLE departamento (
+  departamento_id NUMBER       NOT NULL,
+  nm_departamento VARCHAR2(75) NULL
+)
+ 
+/
+
+ALTER TABLE departamento
+  ADD CONSTRAINT pk_departamento PRIMARY KEY (
+    departamento_id
+  )
+/
+
+
