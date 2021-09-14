@@ -1,0 +1,21 @@
+CREATE TABLE perfil (
+  perfil_id NUMBER       NOT NULL,
+  nm_perfil VARCHAR2(50) NULL,
+  modulo_id NUMBER       NULL
+)
+/
+ALTER TABLE perfil
+  ADD CONSTRAINT pk_perfil PRIMARY KEY (
+    perfil_id
+  )
+/
+
+ALTER TABLE perfil
+  ADD CONSTRAINT fk_modulo_perf FOREIGN KEY (
+    modulo_id
+  ) REFERENCES modulo (
+    modulo_id
+  )
+/
+
+
