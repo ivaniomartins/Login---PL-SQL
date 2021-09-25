@@ -5,4 +5,3 @@ CREATE SEQUENCE seq_perfil
   NOCYCLE
   ORDER
   NOCACHE
-/

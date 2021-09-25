@@ -5,4 +5,3 @@ CREATE SEQUENCE seq_login_usuario
   NOCYCLE
   ORDER
   NOCACHE
-/

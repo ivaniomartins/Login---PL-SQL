@@ -5,4 +5,3 @@ CREATE SEQUENCE seq_departamento
   NOCYCLE
   ORDER
   NOCACHE
-/
